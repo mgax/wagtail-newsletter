@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 from wagtail.admin.panels import FieldPanel, ObjectList, TabbedInterface
 from wagtail.models import Page
 
-from . import audiences, get_recipients_model_string
+from . import audiences, campaign_backends, get_recipients_model_string, panels
 
 
 class NewsletterRecipientsBase(models.Model):
@@ -95,6 +95,7 @@ class NewsletterPageMixin(Page):
                 widget=recipients_chooser_viewset.widget_class,
             ),
             FieldPanel("newsletter_subject"),
+            panels.NewsletterPanel(heading=campaign_backends.get_backend().name),
         ]
 
     preview_modes = [  # type: ignore
@@ -161,3 +162,19 @@ class NewsletterPageMixin(Page):
             return HttpResponse(self.get_newsletter_html().encode())
 
         return super().serve_preview(request, mode_name)
+
+    def send_newsletter_test(self, email_address):
+        # TODO check editor permissions
+        backend = campaign_backends.get_backend()
+        revision = cast(NewsletterPageMixin, self.get_latest_revision_as_object())
+        self.newsletter_campaign = backend.save_campaign(
+            campaign_id=self.newsletter_campaign,
+            recipients=revision.newsletter_recipients,
+            subject=revision.newsletter_subject or revision.title,
+            content=revision.get_newsletter_html(),
+        )
+        self.save(update_fields=["newsletter_campaign"])
+        backend.send_test_email(
+            campaign_id=self.newsletter_campaign,
+            email_address=email_address,
+        )

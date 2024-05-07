@@ -9,6 +9,14 @@ from django.db import migrations, models
 import demo.fields
 
 
+def set_site_port(apps, schema_editor):
+    Site = apps.get_model("wagtailcore.Site")
+    site = Site.objects.filter(hostname="localhost").first()
+    if site:
+        site.port = 8000
+        site.save()
+
+
 class Migration(migrations.Migration):
     initial = True
 
@@ -17,6 +25,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunPython(set_site_port, migrations.RunPython.noop),
         migrations.CreateModel(
             name="ArticlePage",
             fields=[

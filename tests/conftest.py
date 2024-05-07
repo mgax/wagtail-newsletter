@@ -19,6 +19,8 @@ def clear_cache():
 
 
 class MemoryCampaignBackend(CampaignBackend):
+    name = "Memory campaign backend"
+
     def __init__(self):
         self.audiences = []
         self.segments = {}
@@ -35,6 +37,12 @@ class MemoryCampaignBackend(CampaignBackend):
             return self.segments.get(audience_id, [])
         else:
             raise Audience.DoesNotExist
+
+    def save_campaign(self, **kwargs):
+        raise NotImplementedError
+
+    def send_test_email(self, **kwargs):
+        raise NotImplementedError
 
 
 @pytest.fixture

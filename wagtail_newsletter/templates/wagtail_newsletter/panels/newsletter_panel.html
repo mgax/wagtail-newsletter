@@ -1,0 +1,58 @@
+<div id="newsletter-send-test-email">
+    <p>
+        <button type="button" class="button">
+            Send test email
+        </button>
+    </p>
+    <p class="help"></p>
+</div>
+
+<script>
+(function() {
+    const panel = document.querySelector("#newsletter-send-test-email");
+    const button = panel.querySelector("button");
+    const message = panel.querySelector("p.help");
+    const csrfTokenInput = document.querySelector("input[name=csrfmiddlewaretoken]");
+    if (!csrfTokenInput) throw new Error("Could not find a CSRF token hidden input.");
+    let url = null;
+    {% if self.instance.pk %}
+    url = "{% url 'wagtail_newsletter:send_test_email' page_id=self.instance.pk %}";
+    {% endif %}
+
+    button.addEventListener("click", async (event) => {
+        button.disabled = true;
+        button.classList.add("loading");
+
+        try {
+            if (! url) throw new Error("Page must be saved before a test email can be sent.");
+
+            const email_address = prompt("Email address");
+            if (email_address === null) return;
+
+            message.textContent = "Sending ...";
+            const response = await fetch(
+                url,
+                {
+                    method: "POST",
+                    mode: "same-origin",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrfTokenInput.value,
+                    },
+                    body: JSON.stringify({ email_address }),
+                },
+            );
+            if (!response.ok) throw new Error("Response error");
+            const result = await response.json();
+            message.textContent = result.message;
+        }
+        catch (error) {
+            console.error(error);
+            message.textContent = error;
+        }
+        finally {
+            button.disabled = false;
+        }
+    });
+})();
+</script>
