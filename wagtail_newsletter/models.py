@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 from wagtail.admin.panels import FieldPanel, ObjectList, TabbedInterface
 from wagtail.models import Page
 
-from . import audiences, get_recipients_model_string
+from . import audiences, campaign_backends, get_recipients_model_string, panels
 
 
 class NewsletterRecipientsBase(models.Model):
@@ -95,6 +95,7 @@ class NewsletterPageMixin(Page):
                 widget=recipients_chooser_viewset.widget_class,
             ),
             FieldPanel("newsletter_subject"),
+            panels.NewsletterPanel(heading=campaign_backends.get_backend().name),
         ]
 
     preview_modes = [  # type: ignore

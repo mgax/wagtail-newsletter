@@ -1,4 +1,5 @@
-from typing import Any
+from contextlib import contextmanager
+from typing import Any, Optional, cast
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -9,10 +10,22 @@ from ..audiences import (
     Audience,
     AudienceSegment,
 )
+from ..models import NewsletterRecipientsBase
 from . import CampaignBackend
 
 
+@contextmanager
+def log_api_errors():
+    try:
+        yield
+    except ApiClientError as error:
+        print(error.text)
+        raise
+
+
 class MailchimpCampaignBackend(CampaignBackend):
+    name = "Mailchimp"
+
     def __init__(self):
         self.client = Client()
         self.client.set_config(self.get_client_config())
@@ -59,3 +72,43 @@ class MailchimpCampaignBackend(CampaignBackend):
             )
             for segment in segments
         ]
+
+    def save_campaign(
+        self,
+        *,
+        campaign_id: Optional[str] = None,
+        recipients: Optional[NewsletterRecipientsBase],
+        subject: str,
+        content: str,
+    ) -> str:
+        body: dict[str, Any] = {
+            "settings": {
+                # TODO check that these settings are set
+                "from_name": settings.WAGTAIL_NEWSLETTER_FROM_NAME,
+                "reply_to": settings.WAGTAIL_NEWSLETTER_REPLY_TO,
+                "subject_line": subject,
+            },
+        }
+
+        if recipients is not None:
+            body["recipients"] = {
+                "list_id": recipients.audience,
+            }
+
+            if recipients.segment:
+                segment_id = int(recipients.segment.split("/")[1])
+                body["recipients"]["segment_opts"] = {
+                    "saved_segment_id": segment_id,
+                }
+
+        with log_api_errors():
+            if not campaign_id:
+                body["type"] = "regular"
+                campaign_id = cast(str, self.client.campaigns.create(body)["id"])
+
+            else:
+                self.client.campaigns.update(campaign_id, body)
+
+            self.client.campaigns.set_content(campaign_id, {"html": content})
+
+        return campaign_id

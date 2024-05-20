@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 
 from django.conf import settings
 from django.utils.module_loading import import_string
 
-from .. import audiences
+from .. import audiences, models
 
 
 DEFAULT_CAMPAIGN_BACKEND = (
@@ -12,13 +13,25 @@ DEFAULT_CAMPAIGN_BACKEND = (
 
 
 class CampaignBackend(ABC):
-    @abstractmethod
-    def get_audiences(self) -> "list[audiences.Audience]":
-        raise NotImplementedError
+    name: str
 
     @abstractmethod
-    def get_audience_segments(self, audience_id) -> "list[audiences.AudienceSegment]":
-        raise NotImplementedError
+    def get_audiences(self) -> "list[audiences.Audience]": ...
+
+    @abstractmethod
+    def get_audience_segments(
+        self, audience_id
+    ) -> "list[audiences.AudienceSegment]": ...
+
+    @abstractmethod
+    def save_campaign(
+        self,
+        *,
+        campaign_id: Optional[str] = None,
+        recipients: "Optional[models.NewsletterRecipientsBase]",
+        subject: str,
+        content: str,
+    ) -> str: ...
 
 
 def get_backend() -> CampaignBackend:

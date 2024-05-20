@@ -63,7 +63,7 @@ def test_persistent_fields(monkeypatch: pytest.MonkeyPatch):
 
 
 @pytest.mark.django_db
-def test_admin_panels(admin_client):
+def test_admin_panels(admin_client, memory_backend):
     page = ArticlePage(title="title 0")
     Site.objects.get().root_page.add_child(instance=page)
     url = reverse("wagtailadmin_pages:edit", kwargs={"page_id": page.pk})
@@ -72,7 +72,11 @@ def test_admin_panels(admin_client):
         tab.heading: [panel.heading for panel in tab.children]
         for tab in dict(response.context)["edit_handler"].children
     }
-    assert panels["Newsletter"] == ["Newsletter recipients", "Newsletter subject"]
+    assert panels["Newsletter"] == [
+        "Newsletter recipients",
+        "Newsletter subject",
+        "Campaign Testing",
+    ]
 
 
 def test_newsletter_html():
