@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Any, Optional
 
 from django.conf import settings
 from django.utils.module_loading import import_string
@@ -10,6 +10,14 @@ from .. import audiences, models
 DEFAULT_CAMPAIGN_BACKEND = (
     "wagtail_newsletter.campaign_backends.mailchimp.MailchimpCampaignBackend"
 )
+
+
+class Campaign(ABC):
+    url: str
+    sent: bool
+
+    @abstractmethod
+    def get_report(self) -> "dict[str, Any]": ...
 
 
 class CampaignBackend(ABC):
@@ -32,6 +40,15 @@ class CampaignBackend(ABC):
         subject: str,
         content: str,
     ) -> str: ...
+
+    @abstractmethod
+    def get_campaign(self, campaign_id: str) -> Campaign: ...
+
+    @abstractmethod
+    def send_test_email(self, *, campaign_id: str, email_address: str) -> None: ...
+
+    @abstractmethod
+    def send_campaign(self, campaign_id: str) -> None: ...
 
 
 def get_backend() -> CampaignBackend:

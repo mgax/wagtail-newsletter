@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from datetime import datetime
 from typing import Any, Optional, cast
 
 from django.conf import settings
@@ -11,7 +12,10 @@ from ..audiences import (
     AudienceSegment,
 )
 from ..models import NewsletterRecipientsBase
-from . import CampaignBackend
+from . import Campaign, CampaignBackend
+
+
+CAMPAIGN_STATUS_DRAFT = "save"
 
 
 @contextmanager
@@ -21,6 +25,43 @@ def log_api_errors():
     except ApiClientError as error:
         print(error.text)
         raise
+
+
+class MailchimpCampaign(Campaign):
+    def __init__(
+        self,
+        backend: "MailchimpCampaignBackend",
+        id: str,
+        web_id: str,
+        status: str,
+    ):
+        self.backend = backend
+        self.id = id
+        self.web_id = web_id
+        self.status = status
+
+    @property
+    def sent(self):  # type: ignore
+        return self.status != CAMPAIGN_STATUS_DRAFT
+
+    @property
+    def url(self):  # type: ignore
+        server = self.backend.client.api_client.server
+        base_url = f"https://{server}.admin.mailchimp.com"
+
+        if self.sent:
+            return f"{base_url}/reports/summary?id={self.web_id}"
+
+        else:
+            return f"{base_url}/campaigns/edit?id={self.web_id}"
+
+    def get_report(self) -> "dict[str, Any]":
+        # TODO "send_time": datetime.fromisoformat(report["send_time"]), ValueError: Invalid isoformat string: ''
+        report = self.backend.client.reports.get_campaign_report(self.id)
+        return {
+            "send_time": datetime.fromisoformat(report["send_time"]),
+            "emails_sent": report["emails_sent"],
+        }
 
 
 class MailchimpCampaignBackend(CampaignBackend):
@@ -112,3 +153,28 @@ class MailchimpCampaignBackend(CampaignBackend):
             self.client.campaigns.set_content(campaign_id, {"html": content})
 
         return campaign_id
+
+    def get_campaign(self, campaign_id: str):
+        with log_api_errors():
+            data = self.client.campaigns.get(campaign_id)
+
+        return MailchimpCampaign(
+            backend=self,
+            id=campaign_id,
+            web_id=data["web_id"],
+            status=data["status"],
+        )
+
+    def send_test_email(self, *, campaign_id: str, email_address: str):
+        with log_api_errors():
+            self.client.campaigns.send_test_email(
+                campaign_id,
+                {
+                    "test_emails": [email_address],
+                    "send_type": "html",
+                },
+            )
+
+    def send_campaign(self, campaign_id: str):
+        with log_api_errors():
+            self.client.campaigns.send(campaign_id)

@@ -86,6 +86,10 @@ class NewsletterPageMixin(Page):
         abstract = True
 
     @classmethod
+    def get_newsletter_panel(cls):
+        return panels.NewsletterPanel(heading=campaign_backends.get_backend().name)
+
+    @classmethod
     def get_newsletter_panels(cls):
         from .viewsets import recipients_chooser_viewset
 
@@ -95,7 +99,7 @@ class NewsletterPageMixin(Page):
                 widget=recipients_chooser_viewset.widget_class,
             ),
             FieldPanel("newsletter_subject"),
-            panels.NewsletterPanel(heading=campaign_backends.get_backend().name),
+            cls.get_newsletter_panel(),
         ]
 
     preview_modes = [  # type: ignore

@@ -1,0 +1,7 @@
+.wn-panel__loading-spinner {
+  display: none;
+}
+
+.wn-panel--loading .wn-panel__loading-spinner {
+  display: block;
+}

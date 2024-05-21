@@ -1,0 +1,75 @@
+{% load wagtailadmin_tags %}
+
+{% if self.instance.pk %}
+    <div
+        class="wn-panel"
+        data-controller="wn-panel"
+        data-wn-panel-loaded-value="{{ self.loaded|lower }}"
+        data-wn-panel-urls-value="{{ urls_json }}"
+        data-wn-panel-user-email-value="{{ user_email }}"
+        data-wn-panel-loading-class="wn-panel--loading"
+    >
+        {% if loaded and not campaign_sent %}
+            <p class="help">
+                These actions will save the campaign to {{ self.heading }}.
+            </p>
+
+            <p>
+                <button
+                    type="button"
+                    class="button button-small button-secondary button-longrunning"
+                    data-controller="w-progress"
+                    data-action="wn-panel#saveDraft"
+                    data-wn-panel-target="saveDraft button"
+                >
+                    {% icon name="spinner" %}
+                    Save draft
+                </button>
+
+                <button
+                    type="button"
+                    class="button button-small button-secondary"
+                    data-action="wn-panel#sendTestEmail"
+                    data-wn-panel-target="sendTestEmail button"
+                >
+                    Send test email
+                </button>
+
+                <button
+                    type="button"
+                    class="button button-small"
+                    data-action="wn-panel#sendCampaign"
+                    data-wn-panel-target="sendCampaign button"
+                >
+                    Send campaign
+                </button>
+            </p>
+        {% endif %}
+
+        {% if campaign %}
+            <p>
+                <a href="{{ campaign.url }}" target="_blank">
+                    {% icon name="link-external" classname="w-w-4 w-h-4" %}
+                    Open campaign in {{ self.heading }}
+                </a>
+            </p>
+        {% endif %}
+
+        <div class="wn-panel__loading-spinner">
+            [loading spinner]
+        </div>
+
+        {% if campaign_sent %}
+            {% with report=campaign.get_report %}
+                <p>
+                    {{ report.emails_sent }} emails sent,
+                    {{ report.send_time|timesince }} ago.
+                </p>
+            {% endwith %}
+        {% endif %}
+    </div>
+{% else %}
+    <p class="help">
+        Page must be saved before it can be sent as a newsletter.
+    </p>
+{% endif %}
