@@ -12,6 +12,7 @@ window.wagtail.app.register("wn-panel",
       loaded: Boolean,
       urls: Object,
       userEmail: String,
+      recipientsDescription: String,
     }
 
     static classes = [
@@ -39,7 +40,10 @@ window.wagtail.app.register("wn-panel",
     }
 
     sendCampaign() {
-      this.postAndReload("sendCampaign");
+      const answer = confirm(`Send campaign to ${this.recipientsDescriptionValue}?`);
+      if (answer) {
+        this.postAndReload("sendCampaign");
+      }
     }
 
     loadedValueChanged(loaded) {
@@ -50,6 +54,7 @@ window.wagtail.app.register("wn-panel",
     }
 
     async post(url, body) {
+      this.messageTarget.textContent = "...";
       const csrfInput = document.querySelector("input[name=csrfmiddlewaretoken]");
       const resp = await fetch(
         url,

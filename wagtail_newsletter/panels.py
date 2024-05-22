@@ -5,7 +5,7 @@ from typing import Optional
 from django.urls import reverse
 from wagtail.admin.panels import Panel
 
-from . import campaign_backends
+from . import campaign_backends, models
 
 
 class NewsletterPanel(Panel):
@@ -13,23 +13,23 @@ class NewsletterPanel(Panel):
 
     class BoundPanel(Panel.BoundPanel):
         template_name = "wagtail_newsletter/panels/newsletter_panel.html"
-
         loaded = False
         campaign = None
+        message = ""
+
+        instance: "models.NewsletterPageMixin"
 
         class Media:
             js = [
                 "wagtail_newsletter/js/wagtail_newsletter.js",
             ]
-            css = {
-                "all": [
-                    "wagtail_newsletter/css/wagtail_newsletter.css",
-                ]
-            }
 
         def set_campaign(self, campaign: Optional[campaign_backends.Campaign]):
             self.loaded = True
             self.campaign = campaign
+
+        def set_message(self, message: str):
+            self.message = message
 
         def get_context_data(self, parent_context=None):
             context = super().get_context_data(parent_context) or {}
@@ -58,6 +58,8 @@ class NewsletterPanel(Panel):
                 context["campaign"] = self.campaign
                 context["campaign_sent"] = self.campaign and self.campaign.sent
                 context["user_email"] = self.request.user.email
+                context["recipients"] = self.instance.newsletter_recipients
+                context["message"] = self.message
 
                 if self.campaign and self.campaign.sent:
                     context["campaign_report"] = self.campaign.get_report()

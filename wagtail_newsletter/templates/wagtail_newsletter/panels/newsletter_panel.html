@@ -2,16 +2,20 @@
 
 {% if self.instance.pk %}
     <div
-        class="wn-panel"
+        class="wn-panel loading-mask"
         data-controller="wn-panel"
         data-wn-panel-loaded-value="{{ self.loaded|lower }}"
         data-wn-panel-urls-value="{{ urls_json }}"
         data-wn-panel-user-email-value="{{ user_email }}"
-        data-wn-panel-loading-class="wn-panel--loading"
+        {% if recipients %}
+            data-wn-panel-recipients-description="{{ recipients.name }} with {{ recipients.member_count }} subscribers"
+        {% endif %}
+        data-wn-panel-loading-class="loading"
     >
         {% if loaded and not campaign_sent %}
             <p class="help">
                 These actions will save the campaign to {{ self.heading }}.
+                Please save any unsaved changes first.
             </p>
 
             <p>
@@ -40,11 +44,18 @@
                     class="button button-small"
                     data-action="wn-panel#sendCampaign"
                     data-wn-panel-target="sendCampaign button"
+                    {% if not recipients %}
+                        disabled
+                    {% endif %}
                 >
                     Send campaign
                 </button>
             </p>
         {% endif %}
+
+        <p class="help" data-wn-panel-target="message">
+            {{ message }}
+        </p>
 
         {% if campaign %}
             <p>
@@ -54,10 +65,6 @@
                 </a>
             </p>
         {% endif %}
-
-        <div class="wn-panel__loading-spinner">
-            [loading spinner]
-        </div>
 
         {% if campaign_sent %}
             {% with report=campaign.get_report %}
