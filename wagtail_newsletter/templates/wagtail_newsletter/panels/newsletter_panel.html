@@ -11,12 +11,20 @@
             data-wn-panel-recipients-description="{{ recipients.name }} with {{ recipients.member_count }} subscribers"
         {% endif %}
         data-wn-panel-loading-class="loading"
+        data-wn-panel-unsaved-class="wn-panel--unsaved"
+        data-action="w-unsaved:add@document->wn-panel#unsaved"
     >
         {% if loaded and not campaign_sent %}
             <p class="help">
-                These actions will save the campaign to {{ self.heading }}.
-                Please save any unsaved changes first.
+                These actions will save the latest revision of the page as a
+                campaign in {{ self.heading }}. Please be sure to save the page
+                first.
             </p>
+
+            <div class="help-block help-warning wn-panel__unsaved-warning">
+                {% icon name="warning" %}
+                You have unsaved changes. The newsletter will reflect the most recently saved version.
+            </div>
 
             <p>
                 <button

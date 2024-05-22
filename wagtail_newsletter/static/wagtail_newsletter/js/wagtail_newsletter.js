@@ -17,6 +17,7 @@ window.wagtail.app.register("wn-panel",
 
     static classes = [
       "loading",
+      "unsaved",
     ]
 
     initialize() {
@@ -44,6 +45,10 @@ window.wagtail.app.register("wn-panel",
       if (answer) {
         this.postAndReload("sendCampaign");
       }
+    }
+
+    unsaved() {
+      this.element.classList.add(this.unsavedClass);
     }
 
     loadedValueChanged(loaded) {

@@ -23,6 +23,11 @@ class NewsletterPanel(Panel):
             js = [
                 "wagtail_newsletter/js/wagtail_newsletter.js",
             ]
+            css = {
+                "all": [
+                    "wagtail_newsletter/css/wagtail_newsletter.css",
+                ]
+            }
 
         def set_campaign(self, campaign: Optional[campaign_backends.Campaign]):
             self.loaded = True

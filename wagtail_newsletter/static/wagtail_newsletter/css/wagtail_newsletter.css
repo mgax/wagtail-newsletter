@@ -1,0 +1,7 @@
+.wn-panel__unsaved-warning {
+  display: none;
+}
+
+.wn-panel--unsaved .wn-panel__unsaved-warning {
+  display: block;
+}
