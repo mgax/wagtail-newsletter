@@ -56,7 +56,7 @@ def save_draft(request: HttpRequest, page_id: int):
     backend = campaign_backends.get_backend()
     _save_campaign(backend, page)
     campaign = backend.get_campaign(campaign_id=page.newsletter_campaign)
-    return _render_panel(request, page, campaign, "Draft saved")
+    return _render_panel(request, page, campaign, "Campaign draft saved.")
 
 
 def send_test_email(request: HttpRequest, page_id: int):
@@ -69,7 +69,7 @@ def send_test_email(request: HttpRequest, page_id: int):
     )
 
     campaign = backend.get_campaign(campaign_id=page.newsletter_campaign)
-    return _render_panel(request, page, campaign, "Test message sent")
+    return _render_panel(request, page, campaign, "Test message sent.")
 
 
 def send_campaign(request: HttpRequest, page_id: int):
@@ -78,4 +78,4 @@ def send_campaign(request: HttpRequest, page_id: int):
     _save_campaign(backend, page)
     backend.send_campaign(page.newsletter_campaign)
     campaign = backend.get_campaign(campaign_id=page.newsletter_campaign)
-    return _render_panel(request, page, campaign, "Campaign sent")
+    return _render_panel(request, page, campaign, "Campaign sent.")

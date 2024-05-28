@@ -17,11 +17,12 @@
         data-action="w-unsaved:add@document->wn-panel#unsaved"
     >
         {% if loaded and not campaign_sent %}
-            <p class="help">
+            <div class="help-block help-info">
+                {% icon name="help" %}
                 These actions will save the latest revision of the page as a
                 campaign in {{ self.heading }}. Please be sure to save the page
                 first.
-            </p>
+            </div>
 
             <div class="help-block help-warning wn-panel__unsaved-warning">
                 {% icon name="warning" %}
@@ -83,19 +84,43 @@
         {% endif %}
 
         {% if campaign_sent %}
-            <p><b>Status:</b> {{ campaign.status }}</p>
-            {% with report=campaign.get_report %}
-                {% if report.send_time %}
-                    <p><b>Send time:</b> {{ report.send_time }} ({{ report.send_time|timesince }} ago).
-                {% endif %}
-                <p><b>Emails sent:</b> {{ report.emails_sent }} ({{ report.bounces }} bounces)</p>
-                <p><b>Opens:</b> {{ report.opens }}</p>
-                <p><b>Clicks:</b> {{ report.clicks }}</p>
-            {% endwith %}
+            {% block campaign_status %}
+                <p>
+                    <b>Status:</b>
+                    {{ campaign.status }}
+                </p>
+
+                {% with report=campaign.get_report %}
+                    {% if report.send_time %}
+                        <p>
+                            <b>Send time:</b>
+                            {{ report.send_time }}
+                            ({{ report.send_time|timesince }} ago).
+                        </p>
+                    {% endif %}
+
+                    <p>
+                        <b>Emails sent:</b>
+                        {{ report.emails_sent }} ({{ report.bounces }} bounces)
+                    </p>
+
+                    <p>
+                        <b>Opens:</b>
+                        {{ report.opens }}
+                    </p>
+
+                    <p>
+                        <b>Clicks:</b>
+                        {{ report.clicks }}
+                    </p>
+                {% endwith %}
+            {% endblock %}
         {% endif %}
     </div>
 {% else %}
-    <p class="help">
+    <div class="help-block help-info">
+        {% icon name="help" %}
         Page must be saved before it can be sent as a newsletter.
-    </p>
+    </div>
+
 {% endif %}
