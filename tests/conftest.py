@@ -41,6 +41,15 @@ class MemoryCampaignBackend(CampaignBackend):
     def save_campaign(self, **kwargs):
         raise NotImplementedError
 
+    def get_campaign(self, campaign_id: str):
+        raise NotImplementedError
+
+    def send_campaign(self, campaign_id: str):
+        raise NotImplementedError
+
+    def send_test_email(self, *, campaign_id: str, email_address: str):
+        raise NotImplementedError
+
 
 @pytest.fixture
 def memory_backend(monkeypatch: pytest.MonkeyPatch):

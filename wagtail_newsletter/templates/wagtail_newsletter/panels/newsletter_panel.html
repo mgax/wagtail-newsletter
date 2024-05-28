@@ -8,8 +8,10 @@
         data-wn-panel-urls-value="{{ urls_json }}"
         data-wn-panel-user-email-value="{{ user_email }}"
         {% if recipients %}
-            data-wn-panel-recipients-description="{{ recipients.name }} with {{ recipients.member_count }} subscribers"
+            data-wn-panel-recipients-description-value=
+                "&quot;{{ recipients.name }}&quot; with {{ recipients.member_count }} subscribers"
         {% endif %}
+        data-wn-panel-error-class="wn-panel--error"
         data-wn-panel-loading-class="loading"
         data-wn-panel-unsaved-class="wn-panel--unsaved"
         data-action="w-unsaved:add@document->wn-panel#unsaved"
@@ -23,7 +25,13 @@
 
             <div class="help-block help-warning wn-panel__unsaved-warning">
                 {% icon name="warning" %}
-                You have unsaved changes. The newsletter will reflect the most recently saved version.
+                You have unsaved changes. The newsletter will reflect the most
+                recently saved version.
+            </div>
+
+            <div class="help-block help-critical wn-panel__error-block">
+                {% icon name="warning" %}
+                <output data-wn-panel-target="errorMessage"></output>
             </div>
 
             <p>
@@ -35,7 +43,7 @@
                     data-wn-panel-target="saveDraft button"
                 >
                     {% icon name="spinner" %}
-                    Save draft
+                    Save campaign draft
                 </button>
 
                 <button
@@ -75,11 +83,14 @@
         {% endif %}
 
         {% if campaign_sent %}
+            <p><b>Status:</b> {{ campaign.status }}</p>
             {% with report=campaign.get_report %}
-                <p>
-                    {{ report.emails_sent }} emails sent,
-                    {{ report.send_time|timesince }} ago.
-                </p>
+                {% if report.send_time %}
+                    <p><b>Send time:</b> {{ report.send_time }} ({{ report.send_time|timesince }} ago).
+                {% endif %}
+                <p><b>Emails sent:</b> {{ report.emails_sent }} ({{ report.bounces }} bounces)</p>
+                <p><b>Opens:</b> {{ report.opens }}</p>
+                <p><b>Clicks:</b> {{ report.clicks }}</p>
             {% endwith %}
         {% endif %}
     </div>

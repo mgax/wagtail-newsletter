@@ -56,12 +56,16 @@ class MailchimpCampaign(Campaign):
             return f"{base_url}/campaigns/edit?id={self.web_id}"
 
     def get_report(self) -> "dict[str, Any]":
-        # TODO "send_time": datetime.fromisoformat(report["send_time"]), ValueError: Invalid isoformat string: ''
-        report = self.backend.client.reports.get_campaign_report(self.id)
-        return {
-            "send_time": datetime.fromisoformat(report["send_time"]),
-            "emails_sent": report["emails_sent"],
+        data = self.backend.client.reports.get_campaign_report(self.id)
+        report = {
+            "emails_sent": data["emails_sent"],
+            "bounces": sum(data["bounces"].values()),
+            "opens": data["opens"]["unique_opens"],
+            "clicks": data["clicks"]["unique_clicks"],
         }
+        if data["send_time"]:
+            report["send_time"] = datetime.fromisoformat(data["send_time"])
+        return report
 
 
 class MailchimpCampaignBackend(CampaignBackend):

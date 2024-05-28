@@ -5,3 +5,11 @@
 .wn-panel--unsaved .wn-panel__unsaved-warning {
   display: block;
 }
+
+.wn-panel__error-block {
+  display: none;
+}
+
+.wn-panel--error .wn-panel__error-block {
+  display: block;
+}

@@ -103,6 +103,7 @@ STATIC_ROOT = PROJECT_DIR / "static_root"
 STATIC_URL = "/static/"
 
 MEDIA_ROOT = PROJECT_DIR / "media_root"
+MEDIA_URL = "/media/"
 
 WAGTAILADMIN_BASE_URL = "http://localhost:8000"
 WAGTAIL_SITE_NAME = "Wagtail Newsletter demo site"
