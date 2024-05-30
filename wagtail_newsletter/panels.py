@@ -45,8 +45,8 @@ class NewsletterPanel(Panel):
                             "wagtail_newsletter:get_campaign",
                             kwargs={"page_id": self.instance.pk},
                         ),
-                        "saveDraft": reverse(
-                            "wagtail_newsletter:save_draft",
+                        "saveCampaign": reverse(
+                            "wagtail_newsletter:save_campaign",
                             kwargs={"page_id": self.instance.pk},
                         ),
                         "sendTestEmail": reverse(

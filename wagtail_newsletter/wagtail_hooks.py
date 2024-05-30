@@ -2,8 +2,7 @@ from django.urls import include, path
 from django.views.i18n import JavaScriptCatalog
 from wagtail import hooks
 
-from . import DEFAULT_RECIPIENTS_MODEL, get_recipients_model_string, viewsets
-from .views import get_campaign, save_draft, send_campaign, send_test_email
+from . import DEFAULT_RECIPIENTS_MODEL, get_recipients_model_string, views, viewsets
 
 
 @hooks.register("register_admin_urls")  # type: ignore
@@ -14,14 +13,26 @@ def register_admin_urls():
             JavaScriptCatalog.as_view(packages=["wagtail_newsletter"]),
             name="javascript_catalog",
         ),
-        path("page/<int:page_id>/get_campaign", get_campaign, name="get_campaign"),
-        path("page/<int:page_id>/save_draft", save_draft, name="save_draft"),
+        path(
+            "page/<int:page_id>/get_campaign",
+            views.get_campaign,
+            name="get_campaign",
+        ),
+        path(
+            "page/<int:page_id>/save_campaign",
+            views.save_campaign,
+            name="save_campaign",
+        ),
         path(
             "page/<int:page_id>/send_test_email",
-            send_test_email,
+            views.send_test_email,
             name="send_test_email",
         ),
-        path("page/<int:page_id>/send_campaign", send_campaign, name="send_campaign"),
+        path(
+            "page/<int:page_id>/send_campaign",
+            views.send_campaign,
+            name="send_campaign",
+        ),
     ]
 
     return [

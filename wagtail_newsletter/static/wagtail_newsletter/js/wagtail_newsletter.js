@@ -3,7 +3,7 @@ window.wagtail.app.register("wn-panel",
     static targets = [
       "message",
       "button",
-      "saveDraft",
+      "saveCampaign",
       "sendTestEmail",
       "sendCampaign",
       "errorMessage",
@@ -12,14 +12,12 @@ window.wagtail.app.register("wn-panel",
     static values = {
       loaded: Boolean,
       recipientsDescription: String,
-      unsaved: Boolean,
       urls: Object,
       userEmail: String,
     }
 
     static classes = [
       "loading",
-      "unsaved",
       "error",
     ]
 
@@ -33,8 +31,32 @@ window.wagtail.app.register("wn-panel",
       this.postAndReload("getCampaign");
     }
 
-    saveDraft() {
-      this.postAndReload("saveDraft");
+    async saveCampaign() {
+      // TODO prevent concurrency
+
+      const url = new URL('preview/', window.location.href); /* TODO set as controller value */
+      const form = document.querySelector('[data-edit-form]');
+
+      const formValue = (name) => form.querySelector(`input[name=${name}]`).value
+
+      const savePreviewResp = await fetch(url, {
+        method: 'POST',
+        body: new FormData(form),
+      });
+      const previewState = await savePreviewResp.json();
+
+      if (previewState.is_valid && previewState.is_available) {
+        url.searchParams.set('mode', 'newsletter');
+        const recipients = formValue('newsletter_recipients');
+        const subject = formValue('newsletter_subject') || formValue('title');
+        const previewResp = await fetch(url);
+        const content = await previewResp.text();
+        this.postAndReload("saveCampaign", { recipients, subject, content });
+      }
+      else {
+        // TODO error
+        console.log('failed to set preview state:', previewState);
+      }
     }
 
     sendTestEmail() {
@@ -50,19 +72,11 @@ window.wagtail.app.register("wn-panel",
       }
     }
 
-    unsaved() {
-      this.unsavedValue = true;
-    }
-
     loadedValueChanged(loaded) {
       this.element.classList.toggle(this.loadingClass, !loaded);
       if (!loaded) {
         this.buttonTargets.forEach(button => button.setAttribute("disabled", ""));
       }
-    }
-
-    unsavedValueChanged(unsaved) {
-      this.element.classList.toggle(this.unsavedClass, unsaved);
     }
 
     async post(url, body) {

@@ -30,13 +30,25 @@ def _render_panel(
     return HttpResponse(bound_panel.render_html())
 
 
-def _save_campaign(backend, page):
-    revision = cast(NewsletterPageMixin, page.get_latest_revision_as_object())
+def _get_recipients(page, recipients_id):
+    if not recipients_id:
+        return None
+
+    fields = {field.name: field for field in page._meta.fields}
+    recipients_model = fields["newsletter_recipients"].related_model
+    return recipients_model.objects.get(pk=recipients_id)
+
+
+def _save_campaign(
+    backend: campaign_backends.CampaignBackend,
+    page: NewsletterPageMixin,
+    body: "dict[str, str]",
+):
     page.newsletter_campaign = backend.save_campaign(
         campaign_id=page.newsletter_campaign,
-        recipients=revision.newsletter_recipients,
-        subject=revision.newsletter_subject or revision.title,
-        content=revision.get_newsletter_html(),
+        recipients=_get_recipients(page, body["recipients"]),
+        subject=body["subject"],
+        content=body["content"],
     )
     page.save(update_fields=["newsletter_campaign"])
 
@@ -51,18 +63,17 @@ def get_campaign(request: HttpRequest, page_id: int):
     return _render_panel(request, page, campaign)
 
 
-def save_draft(request: HttpRequest, page_id: int):
+def save_campaign(request: HttpRequest, page_id: int):
     page = cast(NewsletterPageMixin, get_object_or_404(Page, pk=page_id).specific)
     backend = campaign_backends.get_backend()
-    _save_campaign(backend, page)
+    _save_campaign(backend, page, json.loads(request.body))
     campaign = backend.get_campaign(campaign_id=page.newsletter_campaign)
-    return _render_panel(request, page, campaign, "Campaign draft saved.")
+    return _render_panel(request, page, campaign, "Campaign saved.")
 
 
 def send_test_email(request: HttpRequest, page_id: int):
     page = cast(NewsletterPageMixin, get_object_or_404(Page, pk=page_id).specific)
     backend = campaign_backends.get_backend()
-    _save_campaign(backend, page)
     backend.send_test_email(
         campaign_id=page.newsletter_campaign,
         email_address=json.loads(request.body)["email"],  # TODO DRF serializer
@@ -75,7 +86,6 @@ def send_test_email(request: HttpRequest, page_id: int):
 def send_campaign(request: HttpRequest, page_id: int):
     page = cast(NewsletterPageMixin, get_object_or_404(Page, pk=page_id).specific)
     backend = campaign_backends.get_backend()
-    _save_campaign(backend, page)
     backend.send_campaign(page.newsletter_campaign)
     campaign = backend.get_campaign(campaign_id=page.newsletter_campaign)
     return _render_panel(request, page, campaign, "Campaign sent.")

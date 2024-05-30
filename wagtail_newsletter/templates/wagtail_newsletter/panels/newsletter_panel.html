@@ -13,23 +13,8 @@
         {% endif %}
         data-wn-panel-error-class="wn-panel--error"
         data-wn-panel-loading-class="loading"
-        data-wn-panel-unsaved-class="wn-panel--unsaved"
-        data-action="w-unsaved:add@document->wn-panel#unsaved"
     >
         {% if loaded and not campaign_sent %}
-            <div class="help-block help-info">
-                {% icon name="help" %}
-                These actions will save the latest revision of the page as a
-                campaign in {{ self.heading }}. Please be sure to save the page
-                first.
-            </div>
-
-            <div class="help-block help-warning wn-panel__unsaved-warning">
-                {% icon name="warning" %}
-                You have unsaved changes. The newsletter will reflect the most
-                recently saved version.
-            </div>
-
             <div class="help-block help-critical wn-panel__error-block">
                 {% icon name="warning" %}
                 <output data-wn-panel-target="errorMessage"></output>
@@ -40,11 +25,11 @@
                     type="button"
                     class="button button-small button-secondary button-longrunning"
                     data-controller="w-progress"
-                    data-action="wn-panel#saveDraft"
-                    data-wn-panel-target="saveDraft button"
+                    data-action="wn-panel#saveCampaign"
+                    data-wn-panel-target="saveCampaign button"
                 >
                     {% icon name="spinner" %}
-                    Save campaign draft
+                    Save campaign
                 </button>
 
                 <button
