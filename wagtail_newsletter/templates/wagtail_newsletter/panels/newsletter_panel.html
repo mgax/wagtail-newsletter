@@ -21,9 +21,34 @@
             </div>
 
             <p>
+                {% if locked %}
+                    <button
+                        type="button"
+                        class="button button-small"
+                        data-action="wn-panel#unlock"
+                    >
+                        {% icon name="lock" classname="w-w-4 w-h-4" %}
+                        Unlock page
+                    </button>
+                {% else %}
+                    <button
+                        type="button"
+                        class="button button-small"
+                        data-action="wn-panel#lock"
+                    >
+                        {% icon name="lock" classname="w-w-4 w-h-4" %}
+                        Lock page for newsletter
+                    </button>
+                {% endif %}
+            </p>
+
+            <p>
                 <button
                     type="button"
-                    class="button button-small button-secondary button-longrunning"
+                    class="
+                        button button-small button-secondary button-longrunning
+                        {% if not locked %}disabled{% endif %}
+                    "
                     data-controller="w-progress"
                     data-action="wn-panel#saveCampaign"
                     data-wn-panel-target="saveCampaign button"
@@ -34,7 +59,10 @@
 
                 <button
                     type="button"
-                    class="button button-small button-secondary"
+                    class="
+                        button button-small button-secondary
+                        {% if not locked %}disabled{% endif %}
+                    "
                     data-action="wn-panel#sendTestEmail"
                     data-wn-panel-target="sendTestEmail button"
                 >
@@ -43,7 +71,10 @@
 
                 <button
                     type="button"
-                    class="button button-small"
+                    class="
+                        button button-small
+                        {% if not locked %}disabled{% endif %}
+                    "
                     data-action="wn-panel#sendCampaign"
                     data-wn-panel-target="sendCampaign button"
                     {% if not recipients %}

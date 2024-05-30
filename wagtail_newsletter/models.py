@@ -7,6 +7,7 @@ from django.template.loader import render_to_string
 from django.utils.safestring import SafeString
 from django.utils.translation import gettext_lazy as _
 from wagtail.admin.panels import FieldPanel, ObjectList, TabbedInterface
+from wagtail.locks import BaseLock
 from wagtail.models import Page
 
 from . import audiences, campaign_backends, get_recipients_model_string, panels
@@ -166,3 +167,36 @@ class NewsletterPageMixin(Page):
             return HttpResponse(self.get_newsletter_html().encode())
 
         return super().serve_preview(request, mode_name)
+
+    def get_lock(self):
+        if PageLockedForNewsletter.objects.filter(page=self).exists():
+            return NewsletterLock(self)
+        return super().get_lock()
+
+
+class PageLockedForNewsletter(models.Model):
+    page = models.ForeignKey(Page, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.page)
+
+
+class NewsletterLock(BaseLock):
+    """
+    A lock that occurs when something is scheduled to be published.
+
+    This prevents it becoming difficult for users to see which version is going to be published.
+    Nobody can edit something that's scheduled for publish.
+    """
+
+    def for_user(self, user):  # type: ignore
+        return True
+
+    def get_message(self, user):  # type: ignore
+        return "Locked for newsletter"
+
+    def get_locked_by(self, user):
+        return "Locked by whoever"
+
+    def get_description(self, user):
+        return "Currently locked in preparation to newsletter"

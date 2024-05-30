@@ -57,6 +57,14 @@ class NewsletterPanel(Panel):
                             "wagtail_newsletter:send_campaign",
                             kwargs={"page_id": self.instance.pk},
                         ),
+                        "lock": reverse(
+                            "wagtail_newsletter:lock",
+                            kwargs={"page_id": self.instance.pk},
+                        ),
+                        "unlock": reverse(
+                            "wagtail_newsletter:unlock",
+                            kwargs={"page_id": self.instance.pk},
+                        ),
                     }
                 )
                 context["loaded"] = self.loaded
@@ -65,6 +73,9 @@ class NewsletterPanel(Panel):
                 context["user_email"] = self.request.user.email
                 context["recipients"] = self.instance.newsletter_recipients
                 context["message"] = self.message
+                context["locked"] = isinstance(
+                    self.instance.get_lock(), models.NewsletterLock
+                )
 
                 if self.campaign and self.campaign.sent:
                     context["campaign_report"] = self.campaign.get_report()

@@ -72,6 +72,16 @@ window.wagtail.app.register("wn-panel",
       }
     }
 
+    lock() {
+      this.postAndReload("lock");
+      window.location.reload();
+    }
+
+    unlock() {
+      this.postAndReload("lock");
+      window.location.reload();
+    }
+
     loadedValueChanged(loaded) {
       this.element.classList.toggle(this.loadingClass, !loaded);
       if (!loaded) {

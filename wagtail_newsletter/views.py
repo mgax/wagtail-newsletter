@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404
 from wagtail.models import Page
 
 from . import campaign_backends, panels
-from .models import NewsletterPageMixin
+from .models import NewsletterPageMixin, PageLockedForNewsletter
 
 
 # TODO DRF class-based views
@@ -89,3 +89,15 @@ def send_campaign(request: HttpRequest, page_id: int):
     backend.send_campaign(page.newsletter_campaign)
     campaign = backend.get_campaign(campaign_id=page.newsletter_campaign)
     return _render_panel(request, page, campaign, "Campaign sent.")
+
+
+def lock(request: HttpRequest, page_id: int):
+    page = cast(NewsletterPageMixin, get_object_or_404(Page, pk=page_id).specific)
+    PageLockedForNewsletter.objects.get_or_create(page=page)
+    return HttpResponse()
+
+
+def unlock(request: HttpRequest, page_id: int):
+    page = cast(NewsletterPageMixin, get_object_or_404(Page, pk=page_id).specific)
+    PageLockedForNewsletter.objects.filter(page=page).delete()
+    return HttpResponse()

@@ -33,6 +33,8 @@ def register_admin_urls():
             views.send_campaign,
             name="send_campaign",
         ),
+        path("page/<int:page_id>/lock", views.lock, name="lock"),
+        path("page/<int:page_id>/unlock", views.unlock, name="unlock"),
     ]
 
     return [
