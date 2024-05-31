@@ -124,7 +124,7 @@ class MailchimpCampaignBackend(CampaignBackend):
         campaign_id: Optional[str] = None,
         recipients: Optional[NewsletterRecipientsBase],
         subject: str,
-        content: str,
+        html: str,
     ) -> str:
         body: dict[str, Any] = {
             "settings": {
@@ -154,7 +154,7 @@ class MailchimpCampaignBackend(CampaignBackend):
             else:
                 self.client.campaigns.update(campaign_id, body)
 
-            self.client.campaigns.set_content(campaign_id, {"html": content})
+            self.client.campaigns.set_content(campaign_id, {"html": html})
 
         return campaign_id
 

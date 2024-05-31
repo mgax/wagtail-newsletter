@@ -1,6 +1,8 @@
+from django.shortcuts import redirect
 from django.urls import include, path
 from django.views.i18n import JavaScriptCatalog
 from wagtail import hooks
+from wagtail.models import Page
 
 from . import DEFAULT_RECIPIENTS_MODEL, get_recipients_model_string, views, viewsets
 
@@ -19,7 +21,7 @@ def register_admin_urls():
             name="get_campaign",
         ),
         path(
-            "page/<int:page_id>/save_campaign",
+            "page/<int:page_id>/save_campaign/<int:revision_id>",
             views.save_campaign,
             name="save_campaign",
         ),
@@ -56,3 +58,20 @@ def register_admin_viewset():
     if get_recipients_model_string() == DEFAULT_RECIPIENTS_MODEL:
         register_viewsets.append(viewsets.newsletter_recipients_viewset)
     return register_viewsets
+
+
+@hooks.register("after_edit_page")  # type: ignore
+def redirect_to_campaign_page(request, page: Page):
+    action = request.POST.get("newsletter_action")
+    if action:
+        # TODO check the action name
+        revision = page.latest_revision
+        if revision is None:
+            raise RuntimeError(
+                'A revision should have been saved by "wagtailadmin_pages:edit"'
+            )
+        return redirect(
+            f"wagtail_newsletter:{action}",
+            page_id=page.pk,
+            revision_id=revision.pk,
+        )

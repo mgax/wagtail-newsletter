@@ -128,8 +128,6 @@ class NewsletterPageMixin(Page):
     # revisions. In effect, these fields behave as if they were not versioned.
     # Subclasses may add their own newsletter-related fields to this list.
     newsletter_persistent_fields = [
-        "newsletter_recipients",
-        "newsletter_subject",
         "newsletter_campaign",
     ]
 

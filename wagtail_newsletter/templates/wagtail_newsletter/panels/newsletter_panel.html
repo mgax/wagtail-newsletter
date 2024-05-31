@@ -15,6 +15,11 @@
         data-wn-panel-loading-class="loading"
     >
         {% if loaded and not campaign_sent %}
+            <div class="help-block help-info">
+                {% icon name="help" %}
+                These actions will save a new page revision.
+            </div>
+
             <div class="help-block help-critical wn-panel__error-block">
                 {% icon name="warning" %}
                 <output data-wn-panel-target="errorMessage"></output>
@@ -22,30 +27,28 @@
 
             <p>
                 <button
-                    type="button"
-                    class="button button-small button-secondary button-longrunning"
-                    data-controller="w-progress"
-                    data-action="wn-panel#saveCampaign"
-                    data-wn-panel-target="saveCampaign button"
+                    type="submit"
+                    name="newsletter_action"
+                    value="save_campaign"
+                    class="button button-small button-secondary"
                 >
-                    {% icon name="spinner" %}
                     Save campaign
-                </button>
+                </a>
 
                 <button
-                    type="button"
+                    type="submit"
+                    name="newsletter_action"
+                    value="send_test_email"
                     class="button button-small button-secondary"
-                    data-action="wn-panel#sendTestEmail"
-                    data-wn-panel-target="sendTestEmail button"
                 >
                     Send test email
                 </button>
 
                 <button
-                    type="button"
+                    type="submit"
+                    name="newsletter_action"
+                    value="send_campaign"
                     class="button button-small"
-                    data-action="wn-panel#sendCampaign"
-                    data-wn-panel-target="sendCampaign button"
                     {% if not recipients %}
                         disabled
                     {% endif %}

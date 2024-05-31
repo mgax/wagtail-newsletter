@@ -38,7 +38,7 @@ class CampaignBackend(ABC):
         campaign_id: Optional[str] = None,
         recipients: "Optional[models.NewsletterRecipientsBase]",
         subject: str,
-        content: str,
+        html: str,
     ) -> str: ...
 
     @abstractmethod

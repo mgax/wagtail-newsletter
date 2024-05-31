@@ -1,0 +1,45 @@
+{% extends "wagtailadmin/generic/base.html" %}
+{% load static wagtailadmin_tags %}
+
+{% block content %}
+    {% get_comments_enabled as comments_enabled %}
+    {% page_permissions page as page_perms %}
+
+    {% include "wagtailadmin/shared/headers/page_edit_header.html" with title=header_title %}
+
+    <div class="wn-save">
+        <h1 class="w-h1">Save campaign</h1>
+
+        <h2>Recipients</h2>
+        <p>
+            <em>{{ newsletter.recipients.name }}</em> with
+            <strong>{{ newsletter.recipients.member_count }} subscribers</strong>
+        </p>
+
+        <h2>Subject</h2>
+        <p>{{ newsletter.subject }}</p>
+
+        <h2>Body</h2>
+        <iframe id="wn-preview"></iframe>
+
+        {{ newsletter.html|json_script:"wn-html" }}
+
+        <script>
+            document.querySelector("#wn-preview").srcdoc = JSON.parse(
+                document.querySelector("#wn-html").textContent
+            );
+        </script>
+
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="revision_id" value="{{ revision_id }}">
+            <a href="{{ next_url }}" class="button button-secondary">Cancel</a>
+            <button type="submit" class="button">Save to {{ backend_name }}</button>
+        </form>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static "wagtail_newsletter/css/wagtail_newsletter.css" %}">
+{% endblock %}
