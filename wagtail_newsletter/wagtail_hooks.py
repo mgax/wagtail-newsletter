@@ -16,24 +16,9 @@ def register_admin_urls():
             name="javascript_catalog",
         ),
         path(
-            "page/<int:page_id>/get_campaign",
-            views.get_campaign,
-            name="get_campaign",
-        ),
-        path(
-            "page/<int:page_id>/save_campaign/<int:revision_id>",
+            "page/<int:page_id>/save_campaign/<int:revision_id>/",
             views.save_campaign,
             name="save_campaign",
-        ),
-        path(
-            "page/<int:page_id>/send_test_email",
-            views.send_test_email,
-            name="send_test_email",
-        ),
-        path(
-            "page/<int:page_id>/send_campaign",
-            views.send_campaign,
-            name="send_campaign",
         ),
     ]
 
@@ -62,16 +47,14 @@ def register_admin_viewset():
 
 @hooks.register("after_edit_page")  # type: ignore
 def redirect_to_campaign_page(request, page: Page):
-    action = request.POST.get("newsletter_action")
-    if action:
-        # TODO check the action name
+    if request.POST.get("newsletter_action"):
         revision = page.latest_revision
         if revision is None:
             raise RuntimeError(
                 'A revision should have been saved by "wagtailadmin_pages:edit"'
             )
         return redirect(
-            f"wagtail_newsletter:{action}",
+            "wagtail_newsletter:save_campaign",
             page_id=page.pk,
             revision_id=revision.pk,
         )

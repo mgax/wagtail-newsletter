@@ -1,114 +1,64 @@
 {% load wagtailadmin_tags %}
 
-{% if self.instance.pk %}
-    <div
-        class="wn-panel loading-mask"
-        data-controller="wn-panel"
-        data-wn-panel-loaded-value="{{ self.loaded|lower }}"
-        data-wn-panel-urls-value="{{ urls_json }}"
-        data-wn-panel-user-email-value="{{ user_email }}"
-        {% if recipients %}
-            data-wn-panel-recipients-description-value=
-                "&quot;{{ recipients.name }}&quot; with {{ recipients.member_count }} subscribers"
-        {% endif %}
-        data-wn-panel-error-class="wn-panel--error"
-        data-wn-panel-loading-class="loading"
-    >
-        {% if loaded and not campaign_sent %}
-            <div class="help-block help-info">
-                {% icon name="help" %}
-                These actions will save a new page revision.
-            </div>
+<div class="wn-panel">
+    {% if not campaign_sent %}
+        <div class="help-block help-info">
+            {% icon name="help" %}
+            This action will save a new page revision.
+        </div>
 
-            <div class="help-block help-critical wn-panel__error-block">
-                {% icon name="warning" %}
-                <output data-wn-panel-target="errorMessage"></output>
-            </div>
-
-            <p>
-                <button
-                    type="submit"
-                    name="newsletter_action"
-                    value="save_campaign"
-                    class="button button-small button-secondary"
-                >
-                    Save campaign
-                </a>
-
-                <button
-                    type="submit"
-                    name="newsletter_action"
-                    value="send_test_email"
-                    class="button button-small button-secondary"
-                >
-                    Send test email
-                </button>
-
-                <button
-                    type="submit"
-                    name="newsletter_action"
-                    value="send_campaign"
-                    class="button button-small"
-                    {% if not recipients %}
-                        disabled
-                    {% endif %}
-                >
-                    Send campaign
-                </button>
-            </p>
-        {% endif %}
-
-        <p class="help" data-wn-panel-target="message">
-            {{ message }}
+        <p>
+            <button
+                type="submit"
+                name="newsletter_action"
+                value="save_campaign"
+                class="button"
+            >
+                Save campaign
+            </button>
         </p>
+    {% endif %}
 
-        {% if campaign %}
+    {% if campaign %}
+        <p>
+            <a href="{{ campaign.url }}" target="_blank">
+                {% icon name="link-external" classname="w-w-4 w-h-4" %}
+                Open campaign in {{ self.heading }}
+            </a>
+        </p>
+    {% endif %}
+
+    {% if campaign_sent %}
+        {% block campaign_status %}
             <p>
-                <a href="{{ campaign.url }}" target="_blank">
-                    {% icon name="link-external" classname="w-w-4 w-h-4" %}
-                    Open campaign in {{ self.heading }}
-                </a>
+                <b>Status:</b>
+                {{ campaign.status }}
             </p>
-        {% endif %}
 
-        {% if campaign_sent %}
-            {% block campaign_status %}
+            {% with report=campaign.get_report %}
+                {% if report.send_time %}
+                    <p>
+                        <b>Send time:</b>
+                        {{ report.send_time }}
+                        ({{ report.send_time|timesince }} ago).
+                    </p>
+                {% endif %}
+
                 <p>
-                    <b>Status:</b>
-                    {{ campaign.status }}
+                    <b>Emails sent:</b>
+                    {{ report.emails_sent }} ({{ report.bounces }} bounces)
                 </p>
 
-                {% with report=campaign.get_report %}
-                    {% if report.send_time %}
-                        <p>
-                            <b>Send time:</b>
-                            {{ report.send_time }}
-                            ({{ report.send_time|timesince }} ago).
-                        </p>
-                    {% endif %}
+                <p>
+                    <b>Opens:</b>
+                    {{ report.opens }}
+                </p>
 
-                    <p>
-                        <b>Emails sent:</b>
-                        {{ report.emails_sent }} ({{ report.bounces }} bounces)
-                    </p>
-
-                    <p>
-                        <b>Opens:</b>
-                        {{ report.opens }}
-                    </p>
-
-                    <p>
-                        <b>Clicks:</b>
-                        {{ report.clicks }}
-                    </p>
-                {% endwith %}
-            {% endblock %}
-        {% endif %}
-    </div>
-{% else %}
-    <div class="help-block help-info">
-        {% icon name="help" %}
-        Page must be saved before it can be sent as a newsletter.
-    </div>
-
-{% endif %}
+                <p>
+                    <b>Clicks:</b>
+                    {{ report.clicks }}
+                </p>
+            {% endwith %}
+        {% endblock %}
+    {% endif %}
+</div>

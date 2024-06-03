@@ -1,14 +1,12 @@
-import json
+from typing import cast
 
-from typing import Optional, cast
-
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from wagtail.admin import messages
 from wagtail.models import ContentType, Page, Revision
 
-from . import campaign_backends, panels
+from . import campaign_backends
 from .models import NewsletterPageMixin
 
 
@@ -16,35 +14,11 @@ from .models import NewsletterPageMixin
 # TODO check editor permissions
 
 
-def _render_panel(
-    request: HttpRequest,
-    page: NewsletterPageMixin,
-    campaign: Optional[campaign_backends.Campaign],
-    message: str = "",
-):
-    panel = page.get_newsletter_panel().bind_to_model(type(page))
-    bound_panel = cast(
-        panels.NewsletterPanel.BoundPanel,
-        panel.get_bound_panel(instance=page, request=request),
-    )
-    bound_panel.set_campaign(campaign)
-    bound_panel.set_message(message)
-    return HttpResponse(bound_panel.render_html())
-
-
-def get_campaign(request: HttpRequest, page_id: int):
-    page = cast(NewsletterPageMixin, get_object_or_404(Page, pk=page_id).specific)
-    backend = campaign_backends.get_backend()
-    if page.newsletter_campaign:
-        campaign = backend.get_campaign(campaign_id=page.newsletter_campaign)
-    else:
-        campaign = None
-    return _render_panel(request, page, campaign)
-
-
 def save_campaign(request: HttpRequest, page_id: int, revision_id: int):
     edit_url = reverse("wagtailadmin_pages:edit", kwargs={"page_id": page_id})
     next_url = f"{edit_url}#tab-newsletter"
+
+    # TODO redirect to next_url if campaign has been sent
 
     page = cast(NewsletterPageMixin, get_object_or_404(Page, pk=page_id).specific)
     revision = cast(
@@ -79,33 +53,29 @@ def save_campaign(request: HttpRequest, page_id: int, revision_id: int):
                 messages.button(campaign.url, f"View in {backend.name}"),
             ],
         )
-        return redirect(next_url)
+
+        action = request.POST.get("action")
+
+        if action == "send_test_email":
+            recipient = request.POST["test_email_recipient"]  # TODO DRF serializer?
+            backend.send_test_email(
+                campaign_id=page.newsletter_campaign,
+                email_address=recipient,
+            )
+            messages.success(request, f"Test message sent to {recipient}")
+
+        elif action == "send_campaign":
+            backend.send_campaign(page.newsletter_campaign)
+            return redirect(next_url)
+
+        return redirect(".")
 
     context = {
         "page": page,
-        "revision_id": revision.pk,
         "newsletter": newsletter_data,
         "backend_name": backend.name,
         "next_url": next_url,
+        "user_email": request.user.email,  # type: ignore
+        "recipients": page.newsletter_recipients,
     }
     return render(request, "wagtail_newsletter/save_campaign.html", context)
-
-
-def send_test_email(request: HttpRequest, page_id: int):
-    page = cast(NewsletterPageMixin, get_object_or_404(Page, pk=page_id).specific)
-    backend = campaign_backends.get_backend()
-    backend.send_test_email(
-        campaign_id=page.newsletter_campaign,
-        email_address=json.loads(request.body)["email"],  # TODO DRF serializer
-    )
-
-    campaign = backend.get_campaign(campaign_id=page.newsletter_campaign)
-    return _render_panel(request, page, campaign, "Test message sent.")
-
-
-def send_campaign(request: HttpRequest, page_id: int):
-    page = cast(NewsletterPageMixin, get_object_or_404(Page, pk=page_id).specific)
-    backend = campaign_backends.get_backend()
-    backend.send_campaign(page.newsletter_campaign)
-    campaign = backend.get_campaign(campaign_id=page.newsletter_campaign)
-    return _render_panel(request, page, campaign, "Campaign sent.")

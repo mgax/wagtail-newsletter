@@ -7,13 +7,22 @@
 
     {% include "wagtailadmin/shared/headers/page_edit_header.html" with title=header_title %}
 
-    <div class="wn-save">
+    <div
+        class="wn-send"
+        data-controller="wn-send"
+        data-wn-send-user-email-value="{{ user_email }}"
+        {% if recipients %}data-wn-send-recipients-description-value="&quot;{{ recipients.name }}&quot; with {{ recipients.member_count }} subscribers"{% endif %}
+    >
         <h1 class="w-h1">Save campaign</h1>
 
         <h2>Recipients</h2>
         <p>
-            <em>{{ newsletter.recipients.name }}</em> with
-            <strong>{{ newsletter.recipients.member_count }} subscribers</strong>
+            {% if recipients %}
+                <em>{{ newsletter.recipients.name }}</em> with
+                <strong>{{ newsletter.recipients.member_count }} subscribers</strong>
+            {% else %}
+                <em>Not set</em>
+            {% endif %}
         </p>
 
         <h2>Subject</h2>
@@ -32,11 +41,47 @@
 
         <form method="POST">
             {% csrf_token %}
-            <input type="hidden" name="revision_id" value="{{ revision_id }}">
-            <a href="{{ next_url }}" class="button button-secondary">Cancel</a>
-            <button type="submit" class="button">Save to {{ backend_name }}</button>
+
+            <input type="hidden" name="test_email_recipient" data-wn-send-target="testEmailRecipient">
+
+            <a href="{{ next_url }}" class="button no">Cancel</a>
+
+            <button
+                type="submit"
+                class="button button-secondary"
+                name="action"
+                value="save_draft"
+                data-wn-send-target="saveDraft"
+            >
+                Save to {{ backend_name }}
+            </button>
+
+            <button
+                type="submit"
+                class="button button-secondary"
+                name="action"
+                value="send_test_email"
+                data-wn-send-target="sendTestEmail"
+            >
+                Send test email
+            </button>
+
+            <button
+                type="submit"
+                class="button"
+                name="action"
+                value="send_campaign"
+                data-wn-send-target="sendCampaign"
+            >
+                Send campaign
+            </button>
         </form>
     </div>
+{% endblock %}
+
+{% block extra_js %}
+    {{ block.super }}
+    <script src="{% static "wagtail_newsletter/js/wagtail_newsletter.js" %}"></script>
 {% endblock %}
 
 {% block extra_css %}

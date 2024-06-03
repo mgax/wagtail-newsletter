@@ -1,20 +1,4 @@
-.wn-panel__unsaved-warning {
-  display: none;
-}
-
-.wn-panel--unsaved .wn-panel__unsaved-warning {
-  display: block;
-}
-
-.wn-panel__error-block {
-  display: none;
-}
-
-.wn-panel--error .wn-panel__error-block {
-  display: block;
-}
-
-.wn-save {
+.wn-send {
   margin-inline-start: 5rem;
   margin-inline-end: 5rem;
 
