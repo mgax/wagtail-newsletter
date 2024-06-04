@@ -16,9 +16,9 @@ def register_admin_urls():
             name="javascript_catalog",
         ),
         path(
-            "page/<int:page_id>/save_campaign/<int:revision_id>/",
-            views.save_campaign,
-            name="save_campaign",
+            "pages/<int:page_id>/revisions/<int:revision_id>/preview/",
+            views.preview_campaign,
+            name="preview_campaign",
         ),
     ]
 
@@ -45,6 +45,7 @@ def register_admin_viewset():
     return register_viewsets
 
 
+@hooks.register("after_create_page")  # type: ignore
 @hooks.register("after_edit_page")  # type: ignore
 def redirect_to_campaign_page(request, page: Page):
     if request.POST.get("newsletter_action"):
@@ -54,7 +55,7 @@ def redirect_to_campaign_page(request, page: Page):
                 'A revision should have been saved by "wagtailadmin_pages:edit"'
             )
         return redirect(
-            "wagtail_newsletter:save_campaign",
+            "wagtail_newsletter:preview_campaign",
             page_id=page.pk,
             revision_id=revision.pk,
         )

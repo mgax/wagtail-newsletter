@@ -14,7 +14,7 @@ from .models import NewsletterPageMixin
 # TODO check editor permissions
 
 
-def save_campaign(request: HttpRequest, page_id: int, revision_id: int):
+def preview_campaign(request: HttpRequest, page_id: int, revision_id: int):
     edit_url = reverse("wagtailadmin_pages:edit", kwargs={"page_id": page_id})
     next_url = f"{edit_url}#tab-newsletter"
 
@@ -50,7 +50,11 @@ def save_campaign(request: HttpRequest, page_id: int, revision_id: int):
             request,
             f'Campaign "{subject}" saved successfully.',
             buttons=[
-                messages.button(campaign.url, f"View in {backend.name}"),
+                messages.button(
+                    campaign.url,
+                    f"View in {backend.name}",
+                    new_window=True,
+                ),
             ],
         )
 
@@ -78,4 +82,4 @@ def save_campaign(request: HttpRequest, page_id: int, revision_id: int):
         "user_email": request.user.email,  # type: ignore
         "recipients": page.newsletter_recipients,
     }
-    return render(request, "wagtail_newsletter/save_campaign.html", context)
+    return render(request, "wagtail_newsletter/preview_campaign.html", context)
