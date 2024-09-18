@@ -131,6 +131,7 @@ custom model:
 
 .. code-block:: python
 
+  # models.py
   from wagtail.fields import RichTextField
   from wagtail_newsletter.models import NewsletterRecipientsBase
 
@@ -145,12 +146,14 @@ Django settings:
 
 .. code-block:: python
 
+  # settings.py
   WAGTAIL_NEWSLETTER_RECIPIENTS_MODEL = "myapp.CustomRecipients"
 
 Register a viewset, and permissions, for the custom recipients model:
 
 .. code-block:: python
 
+  # wagtail_hooks.py
   from django.contrib.auth.models import Permission
   from wagtail import hooks
   from wagtail.admin.panels import FieldPanel
