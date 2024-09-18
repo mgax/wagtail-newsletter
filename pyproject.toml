@@ -62,7 +62,9 @@ mrml = [
 ]
 
 [project.urls]
-Home = "https://github.com/wagtail/wagtail-newsletter"
+Home = "https://github.com/wagtail/wagtail-newsletter/"
+Documentation = "https://wagtail-newsletter.readthedocs.io/"
+Changelog = "https://github.com/wagtail/wagtail-newsletter/blob/main/CHANGELOG.md"
 
 [tool.flit.module]
 name = "wagtail_newsletter"
