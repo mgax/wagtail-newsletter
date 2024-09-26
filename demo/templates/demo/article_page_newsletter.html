@@ -23,6 +23,13 @@
                     </mj-column>
                 </mj-section>
             {% endif %}
+            <mj-section padding="0">
+                <mj-column>
+                    <mj-text padding="10px 25px" font-size="24px" font-weight="bold">
+                        {{ page.title }}
+                    </mj-text>
+                </mj-column>
+            </mj-section>
             {% for block in page.body %}
                 <mj-section padding="0">
                     <mj-column>
